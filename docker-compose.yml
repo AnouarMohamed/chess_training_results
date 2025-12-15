@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16
+    container_name: chess_db
+    environment:
+      POSTGRES_USER: chess
+      POSTGRES_PASSWORD: chess
+      POSTGRES_DB: chess
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chess_api
+    depends_on:
+      - db
+    environment:
+      APP_ENV: dev
+      HTTP_ADDR: ":8080"
+      DATABASE_URL: "postgres://chess:chess@db:5432/chess?sslmode=disable"
+      JWT_SECRET: "change-me-in-dev"
+      JWT_TTL_MIN: "120"
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
