@@ -16,7 +16,10 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("invalid config: %v", err)
+	}
 
 	ctx := context.Background()
 
@@ -32,8 +35,12 @@ func main() {
 	r := router.New(authSvc, cfg.JWTSecret)
 
 	srv := &http.Server{
-		Addr:    cfg.HTTPAddr,
-		Handler: r,
+		Addr:              cfg.HTTPAddr,
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	go func() {
@@ -52,5 +59,7 @@ func main() {
 	defer cancel()
 
 	log.Printf("shutting down...")
-	_ = srv.Shutdown(ctxShutdown)
+	if err := srv.Shutdown(ctxShutdown); err != nil {
+		log.Printf("shutdown error: %v", err)
+	}
 }
