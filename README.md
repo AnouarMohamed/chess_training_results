@@ -55,6 +55,13 @@ API base URL: `http://localhost:8080`
 - `POST /auth/login`
 - `GET /auth/me` (requires `Authorization: Bearer <token>`)
 
+## Request Tracing
+
+All responses include `X-Request-Id`.
+
+- If client sends `X-Request-Id`, the API reuses it.
+- Otherwise, API generates one per request.
+
 ## Development Commands
 
 ```bash
