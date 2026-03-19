@@ -55,6 +55,11 @@ API base URL: `http://localhost:8080`
 - `POST /auth/login`
 - `GET /auth/me` (requires `Authorization: Bearer <token>`)
 
+Security headers added to all responses:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: no-referrer`
+
 ## Development Commands
 
 ```bash
