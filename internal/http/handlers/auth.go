@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"chess-training/internal/http/middleware"
 	"chess-training/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -61,8 +62,30 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func Me(c *gin.Context) {
-	// middleware put values; handler just echoes for now
-	userID, _ := c.Get("user_id")
-	username, _ := c.Get("username")
-	c.JSON(http.StatusOK, gin.H{"userId": userID, "username": username})
+	response := meResponse{
+		UserID:    contextString(c, middleware.CtxUserIDKey),
+		Username:  contextString(c, middleware.CtxUsernameKey),
+		RequestID: contextString(c, requestIDContextKey),
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+type meResponse struct {
+	UserID    string `json:"userId"`
+	Username  string `json:"username"`
+	RequestID string `json:"requestId,omitempty"`
+}
+
+const requestIDContextKey = "request_id"
+
+func contextString(c *gin.Context, key string) string {
+	raw, exists := c.Get(key)
+	if !exists {
+		return ""
+	}
+	value, ok := raw.(string)
+	if !ok {
+		return ""
+	}
+	return value
 }
