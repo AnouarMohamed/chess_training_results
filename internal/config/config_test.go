@@ -24,6 +24,22 @@ func TestLoadUsesDefaults(t *testing.T) {
 	}
 }
 
+func TestLoadUsesCustomHTTPAddr(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("JWT_SECRET", "super-secret")
+	t.Setenv("HTTP_ADDR", ":9090")
+	t.Setenv("JWT_TTL_MIN", "")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+
+	if cfg.HTTPAddr != ":9090" {
+		t.Fatalf("expected custom HTTP addr :9090, got %q", cfg.HTTPAddr)
+	}
+}
+
 func TestLoadRejectsNonPositiveTTL(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://example")
 	t.Setenv("JWT_SECRET", "super-secret")
@@ -77,5 +93,23 @@ func TestLoadRequiresJWTSecret(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "JWT_SECRET") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestLoadPreservesProvidedDatabaseURL(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:pass@db:5432/chess?sslmode=disable")
+	t.Setenv("JWT_SECRET", "super-secret")
+	t.Setenv("JWT_TTL_MIN", "60")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+
+	if !strings.Contains(cfg.DatabaseURL, "db:5432/chess") {
+		t.Fatalf("expected database URL to be preserved, got %q", cfg.DatabaseURL)
+	}
+	if cfg.JWTTTLMin != 60 {
+		t.Fatalf("expected ttl 60, got %d", cfg.JWTTTLMin)
 	}
 }
