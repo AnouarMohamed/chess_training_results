@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Check formatting
+        run: |
+          FMT_OUTPUT=$(gofmt -l .)
+          if [ -n "$FMT_OUTPUT" ]; then
+            echo "These files are not gofmt formatted:"
+            echo "$FMT_OUTPUT"
+            exit 1
+          fi
+
+      - name: Run unit tests
+        run: go test ./...
+
+      - name: Install sqlc
+        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+
+      - name: Verify generated sqlc files are up to date
+        run: |
+          sqlc generate
+          git diff --exit-code -- internal/db/sqlc
