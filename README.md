@@ -25,7 +25,14 @@ make up
 export DATABASE_URL="postgres://chess:chess@localhost:5432/chess?sslmode=disable"
 export JWT_SECRET="change-me"
 export JWT_TTL_MIN="120"
+# optional (default: :8080)
+export HTTP_ADDR=":8080"
 ```
+
+Validation rules:
+- `DATABASE_URL` is required
+- `JWT_SECRET` is required
+- `JWT_TTL_MIN` must be a positive integer
 
 3. Apply migrations (if you have `migrate` CLI installed):
 
