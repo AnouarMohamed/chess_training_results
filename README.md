@@ -27,12 +27,15 @@ export JWT_SECRET="change-me"
 export JWT_TTL_MIN="120"
 # optional (default: :8080)
 export HTTP_ADDR=":8080"
+# optional (default: dev): one of dev|test|staging|prod
+export APP_ENV="dev"
 ```
 
 Validation rules:
 - `DATABASE_URL` is required
 - `JWT_SECRET` is required
 - `JWT_TTL_MIN` must be a positive integer
+- `APP_ENV` must be one of `dev`, `test`, `staging`, `prod`
 
 3. Apply migrations (if you have `migrate` CLI installed):
 
@@ -50,7 +53,7 @@ API base URL: `http://localhost:8080`
 
 ## Main Endpoints
 
-- `GET /healthz`
+- `GET /healthz` (returns `ok` and `env`)
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me` (requires `Authorization: Bearer <token>`)

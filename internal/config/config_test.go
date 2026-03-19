@@ -10,6 +10,7 @@ func TestLoadUsesDefaults(t *testing.T) {
 	t.Setenv("JWT_SECRET", "super-secret")
 	t.Setenv("HTTP_ADDR", "")
 	t.Setenv("JWT_TTL_MIN", "")
+	t.Setenv("APP_ENV", "")
 
 	cfg, err := Load()
 	if err != nil {
@@ -21,6 +22,9 @@ func TestLoadUsesDefaults(t *testing.T) {
 	}
 	if cfg.JWTTTLMin != 120 {
 		t.Fatalf("expected default ttl 120, got %d", cfg.JWTTTLMin)
+	}
+	if cfg.AppEnv != "dev" {
+		t.Fatalf("expected default app env dev, got %q", cfg.AppEnv)
 	}
 }
 
@@ -77,5 +81,40 @@ func TestLoadRequiresJWTSecret(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "JWT_SECRET") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestLoadRejectsInvalidAppEnv(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("JWT_SECRET", "super-secret")
+	t.Setenv("JWT_TTL_MIN", "")
+	t.Setenv("APP_ENV", "production")
+
+	_, err := Load()
+	if err == nil {
+		t.Fatalf("expected Load to fail when APP_ENV is invalid")
+	}
+	if !strings.Contains(err.Error(), "APP_ENV") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestLoadAcceptsSupportedAppEnv(t *testing.T) {
+	supported := []string{"dev", "test", "staging", "prod"}
+	for _, env := range supported {
+		t.Run(env, func(t *testing.T) {
+			t.Setenv("DATABASE_URL", "postgres://example")
+			t.Setenv("JWT_SECRET", "super-secret")
+			t.Setenv("JWT_TTL_MIN", "")
+			t.Setenv("APP_ENV", env)
+
+			cfg, err := Load()
+			if err != nil {
+				t.Fatalf("Load returned error: %v", err)
+			}
+			if cfg.AppEnv != env {
+				t.Fatalf("expected app env %q, got %q", env, cfg.AppEnv)
+			}
+		})
 	}
 }
