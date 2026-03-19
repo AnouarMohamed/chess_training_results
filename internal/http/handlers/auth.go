@@ -16,14 +16,14 @@ func NewAuthHandler(auth *service.AuthService) *AuthHandler {
 }
 
 type registerReq struct {
-	Username string  `json:"username" binding:"required"`
-	Email    *string `json:"email"`
-	Password string  `json:"password" binding:"required"`
+	Username string  `json:"username" binding:"required,min=3,max=32"`
+	Email    *string `json:"email" binding:"omitempty,email,max=254"`
+	Password string  `json:"password" binding:"required,min=8,max=128"`
 }
 
 type loginReq struct {
-	UsernameOrEmail string `json:"usernameOrEmail" binding:"required"`
-	Password        string `json:"password" binding:"required"`
+	UsernameOrEmail string `json:"usernameOrEmail" binding:"required,min=3,max=254"`
+	Password        string `json:"password" binding:"required,min=1,max=128"`
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
