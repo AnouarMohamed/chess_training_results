@@ -41,7 +41,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"token": token, "player": player})
+	c.JSON(http.StatusCreated, gin.H{"token": token, "player": newPlayerResponse(player)})
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -57,7 +57,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token, "player": player})
+	c.JSON(http.StatusOK, gin.H{"token": token, "player": newPlayerResponse(player)})
 }
 
 func Me(c *gin.Context) {

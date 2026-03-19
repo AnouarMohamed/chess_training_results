@@ -7,6 +7,8 @@ import (
 
 	db "chess-training/internal/db/sqlc"
 	"chess-training/internal/util"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,12 +38,13 @@ func (s *AuthService) Register(ctx context.Context, username string, email *stri
 	}
 
 	// Check email if provided
-	var emailVal any = nil
+	emailField := nullText()
 	if email != nil && strings.TrimSpace(*email) != "" {
-		if _, e := s.q.GetPlayerByEmail(ctx, *email); e == nil {
+		normalizedEmail := strings.ToLower(strings.TrimSpace(*email))
+		emailField = requiredText(normalizedEmail)
+		if _, e := s.q.GetPlayerByEmail(ctx, emailField); e == nil {
 			return "", db.Player{}, ErrEmailTaken
 		}
-		emailVal = *email
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -49,23 +52,16 @@ func (s *AuthService) Register(ctx context.Context, username string, email *stri
 		return "", db.Player{}, err
 	}
 
-	// sqlc expects concrete types: use string pointer for nullable
-	var emailStr *string
-	if emailVal != nil {
-		v := emailVal.(string)
-		emailStr = &v
-	}
-
 	player, err = s.q.CreatePlayer(ctx, db.CreatePlayerParams{
 		Username:     username,
-		Email:        emailStr,
+		Email:        emailField,
 		PasswordHash: string(hash),
 	})
 	if err != nil {
 		return "", db.Player{}, err
 	}
 
-	token, err = util.SignJWT(s.jwtSecret, player.ID.String(), player.Username, s.jwtTTLMin)
+	token, err = s.signToken(player)
 	if err != nil {
 		return "", db.Player{}, err
 	}
@@ -81,7 +77,8 @@ func (s *AuthService) Login(ctx context.Context, usernameOrEmail string, passwor
 	// Try username first, then email
 	player, err = s.q.GetPlayerByUsername(ctx, usernameOrEmail)
 	if err != nil {
-		player, err = s.q.GetPlayerByEmail(ctx, usernameOrEmail)
+		emailValue := requiredText(strings.ToLower(usernameOrEmail))
+		player, err = s.q.GetPlayerByEmail(ctx, emailValue)
 		if err != nil {
 			return "", db.Player{}, ErrInvalidCredentials
 		}
@@ -91,9 +88,36 @@ func (s *AuthService) Login(ctx context.Context, usernameOrEmail string, passwor
 		return "", db.Player{}, ErrInvalidCredentials
 	}
 
-	token, err = util.SignJWT(s.jwtSecret, player.ID.String(), player.Username, s.jwtTTLMin)
+	token, err = s.signToken(player)
 	if err != nil {
 		return "", db.Player{}, err
 	}
 	return token, player, nil
+}
+
+func (s *AuthService) signToken(player db.Player) (string, error) {
+	userID, err := uuidFromPG(player.ID)
+	if err != nil {
+		return "", err
+	}
+	return util.SignJWT(s.jwtSecret, userID, player.Username, s.jwtTTLMin)
+}
+
+func uuidFromPG(value pgtype.UUID) (string, error) {
+	if !value.Valid {
+		return "", errors.New("player id is invalid")
+	}
+	parsed, err := uuid.FromBytes(value.Bytes[:])
+	if err != nil {
+		return "", err
+	}
+	return parsed.String(), nil
+}
+
+func requiredText(value string) pgtype.Text {
+	return pgtype.Text{String: value, Valid: true}
+}
+
+func nullText() pgtype.Text {
+	return pgtype.Text{Valid: false}
 }
