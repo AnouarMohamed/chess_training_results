@@ -55,6 +55,10 @@ API base URL: `http://localhost:8080`
 - `POST /auth/login`
 - `GET /auth/me` (requires `Authorization: Bearer <token>`)
 
+Registration input rules:
+- Username: 3-32 chars, letters/numbers/underscore only
+- Password: minimum 8 characters
+
 ## Development Commands
 
 ```bash
