@@ -1,6 +1,6 @@
 APP_NAME=chess-api
 
-.PHONY: dev up down logs test tidy fmt lint sqlc migrate-up migrate-down build run
+.PHONY: dev up down logs test test-fresh tidy fmt vet check lint sqlc migrate-up migrate-down build run
 
 up:
 	docker compose up -d db
@@ -19,6 +19,17 @@ fmt:
 
 test:
 	go test ./...
+
+test-fresh:
+	go test -count=1 ./...
+
+vet:
+	go vet ./...
+
+check:
+	go test ./...
+	go test -count=1 ./...
+	go vet ./...
 
 # --- sqlc ---
 sqlc:

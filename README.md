@@ -60,6 +60,9 @@ API base URL: `http://localhost:8080`
 ```bash
 make fmt
 make test
+make test-fresh
+make vet
+make check
 make sqlc
 make build
 ```
