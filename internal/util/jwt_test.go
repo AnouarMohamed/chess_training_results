@@ -2,6 +2,8 @@ package util
 
 import (
 	"testing"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func TestSignAndParseJWT(t *testing.T) {
@@ -38,5 +40,23 @@ func TestParseJWTRejectsWrongSecret(t *testing.T) {
 
 	if _, err := ParseJWT("secret-b", token); err == nil {
 		t.Fatalf("expected ParseJWT to fail with wrong secret")
+	}
+}
+
+func TestParseJWTRejectsUnexpectedSigningMethod(t *testing.T) {
+	secret := "test-secret"
+	claims := Claims{
+		Sub:      "user-123",
+		Username: "anouar",
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	tokenStr, err := token.SignedString([]byte(secret))
+	if err != nil {
+		t.Fatalf("failed to sign test token: %v", err)
+	}
+
+	if _, err := ParseJWT(secret, tokenStr); err == nil {
+		t.Fatalf("expected ParseJWT to reject non-HS256 token")
 	}
 }
