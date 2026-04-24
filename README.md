@@ -56,6 +56,9 @@ API base URL: `http://localhost:8080`
 - `POST /auth/login`
 - `GET /auth/me` (requires `Authorization: Bearer <token>`)
 
+Authorization header format for protected routes:
+- `Authorization: Bearer <jwt>`
+
 ## Development Commands
 
 ```bash
