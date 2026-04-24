@@ -67,6 +67,10 @@ Security headers added to all responses:
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: no-referrer`
 
+Registration input rules:
+- Username: 3-32 chars, letters/numbers/underscore only
+- Password: minimum 8 characters
+
 ## Development Commands
 
 ```bash

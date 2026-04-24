@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"chess-training/internal/http/middleware"
@@ -36,9 +37,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	token, player, err := h.auth.Register(c.Request.Context(), req.Username, req.Email, req.Password)
 	if err != nil {
-		code := "REGISTER_FAILED"
-		status := http.StatusBadRequest
-		c.JSON(status, gin.H{"error": gin.H{"code": code, "message": err.Error()}})
+		status, code, message := registerErrorResponse(err)
+		c.JSON(status, gin.H{"error": gin.H{"code": code, "message": message}})
 		return
 	}
 
@@ -88,4 +88,19 @@ func contextString(c *gin.Context, key string) string {
 		return ""
 	}
 	return value
+}
+
+func registerErrorResponse(err error) (int, string, string) {
+	switch {
+	case errors.Is(err, service.ErrUsernameTaken):
+		return http.StatusConflict, "USERNAME_TAKEN", "username already exists"
+	case errors.Is(err, service.ErrEmailTaken):
+		return http.StatusConflict, "EMAIL_TAKEN", "email already exists"
+	case errors.Is(err, service.ErrInvalidUsername):
+		return http.StatusBadRequest, "INVALID_USERNAME", "username must be 3-32 chars and contain only letters, numbers, or underscore"
+	case errors.Is(err, service.ErrWeakPassword):
+		return http.StatusBadRequest, "WEAK_PASSWORD", "password must be at least 8 characters"
+	default:
+		return http.StatusBadRequest, "REGISTER_FAILED", err.Error()
+	}
 }
