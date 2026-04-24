@@ -57,6 +57,7 @@ API base URL: `http://localhost:8080`
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me` (requires `Authorization: Bearer <token>`)
+  - Returns `userId`, `username`, and `requestId` when request tracing middleware is active
 
 Authorization header format for protected routes:
 - `Authorization: Bearer <jwt>`
