@@ -22,10 +22,11 @@ make up
 2. Export required environment variables:
 
 ```bash
+cp .env.example .env
+# then export or load from your shell/env manager
 export DATABASE_URL="postgres://chess:chess@localhost:5432/chess?sslmode=disable"
 export JWT_SECRET="change-me"
 export JWT_TTL_MIN="120"
-# optional (default: :8080)
 export HTTP_ADDR=":8080"
 ```
 
@@ -62,6 +63,7 @@ make fmt
 make test
 make sqlc
 make build
+make print-env-template
 ```
 
 ## SQLC
