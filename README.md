@@ -49,6 +49,8 @@ make run
 
 API base URL: `http://localhost:8080`
 
+`docker compose ps` will also report health status for `db` and `api` containers.
+
 ## Main Endpoints
 
 - `GET /healthz`
