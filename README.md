@@ -62,6 +62,11 @@ API base URL: `http://localhost:8080`
 Authorization header format for protected routes:
 - `Authorization: Bearer <jwt>`
 
+Security headers added to all responses:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: no-referrer`
+
 ## Development Commands
 
 ```bash
