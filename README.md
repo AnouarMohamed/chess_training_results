@@ -71,6 +71,11 @@ Registration input rules:
 - Username: 3-32 chars, letters/numbers/underscore only
 - Password: minimum 8 characters
 
+Authentication request validation:
+- Register `username`: 3-32 chars
+- Register `password`: 8-128 chars
+- Register `email`: optional but must be valid email format when present
+
 ## Development Commands
 
 ```bash
