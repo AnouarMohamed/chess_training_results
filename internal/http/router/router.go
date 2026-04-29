@@ -10,7 +10,7 @@ import (
 
 func New(authSvc *service.AuthService, jwtSecret string) *gin.Engine {
 	r := gin.Default()
-	r.Use(middleware.RequestID())
+	r.Use(middleware.SecurityHeaders())
 
 	r.GET("/healthz", handlers.Healthz)
 

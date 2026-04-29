@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	"chess-training/internal/http/middleware"
+	"os"
+
 	"github.com/gin-gonic/gin"
 )
 
 func Healthz(c *gin.Context) {
-	requestID, _ := c.Get(middleware.CtxRequestIDKey)
-	c.JSON(200, gin.H{
-		"ok":        true,
-		"requestId": requestID,
-	})
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "dev"
+	}
+	c.JSON(200, gin.H{"ok": true, "env": env})
 }

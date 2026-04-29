@@ -44,7 +44,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("api listening on %s", cfg.HTTPAddr)
+		log.Printf("api listening on %s (env=%s)", cfg.HTTPAddr, cfg.AppEnv)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen failed: %v", err)
 		}

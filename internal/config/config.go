@@ -11,6 +11,7 @@ type Config struct {
 	DatabaseURL string
 	JWTSecret   string
 	JWTTTLMin   int
+	AppEnv      string
 }
 
 func Load() (Config, error) {
@@ -29,6 +30,10 @@ func Load() (Config, error) {
 	if addr == "" {
 		addr = ":8080"
 	}
+	appEnv, err := resolveAppEnv(os.Getenv("APP_ENV"))
+	if err != nil {
+		return Config{}, err
+	}
 
 	databaseURL, err := requiredEnv("DATABASE_URL")
 	if err != nil {
@@ -44,6 +49,7 @@ func Load() (Config, error) {
 		DatabaseURL: databaseURL,
 		JWTSecret:   jwtSecret,
 		JWTTTLMin:   ttl,
+		AppEnv:      appEnv,
 	}, nil
 }
 
@@ -53,4 +59,16 @@ func requiredEnv(k string) (string, error) {
 		return "", fmt.Errorf("missing env var: %s", k)
 	}
 	return v, nil
+}
+
+func resolveAppEnv(raw string) (string, error) {
+	if raw == "" {
+		return "dev", nil
+	}
+	switch raw {
+	case "dev", "test", "staging", "prod":
+		return raw, nil
+	default:
+		return "", fmt.Errorf("invalid APP_ENV: %s", raw)
+	}
 }

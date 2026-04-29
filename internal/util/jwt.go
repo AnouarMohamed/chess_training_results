@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,6 +30,9 @@ func SignJWT(secret string, userID string, username string, ttlMin int) (string,
 
 func ParseJWT(secret string, tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (any, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, errors.New("unexpected jwt signing method")
+		}
 		return []byte(secret), nil
 	})
 	if err != nil {
