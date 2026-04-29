@@ -15,6 +15,8 @@ import (
 var ErrInvalidCredentials = errors.New("invalid credentials")
 var ErrUsernameTaken = errors.New("username already taken")
 var ErrEmailTaken = errors.New("email already taken")
+var ErrInvalidUsername = errors.New("invalid username")
+var ErrWeakPassword = errors.New("password is too weak")
 
 type AuthService struct {
 	q         db.Querier
@@ -27,9 +29,12 @@ func NewAuthService(q db.Querier, jwtSecret string, jwtTTLMin int) *AuthService 
 }
 
 func (s *AuthService) Register(ctx context.Context, username string, email *string, password string) (token string, player db.Player, err error) {
-	username = strings.TrimSpace(username)
-	if username == "" || len(password) < 6 {
-		return "", db.Player{}, errors.New("invalid input")
+	username, err = normalizeUsername(username)
+	if err != nil {
+		return "", db.Player{}, err
+	}
+	if err := validatePassword(password); err != nil {
+		return "", db.Player{}, err
 	}
 
 	// Check username
