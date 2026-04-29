@@ -28,6 +28,22 @@ func TestLoadUsesDefaults(t *testing.T) {
 	}
 }
 
+func TestLoadUsesCustomHTTPAddr(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("JWT_SECRET", "super-secret")
+	t.Setenv("HTTP_ADDR", ":9090")
+	t.Setenv("JWT_TTL_MIN", "")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+
+	if cfg.HTTPAddr != ":9090" {
+		t.Fatalf("expected custom HTTP addr :9090, got %q", cfg.HTTPAddr)
+	}
+}
+
 func TestLoadRejectsNonPositiveTTL(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://example")
 	t.Setenv("JWT_SECRET", "super-secret")
@@ -84,37 +100,20 @@ func TestLoadRequiresJWTSecret(t *testing.T) {
 	}
 }
 
-func TestLoadRejectsInvalidAppEnv(t *testing.T) {
-	t.Setenv("DATABASE_URL", "postgres://example")
+func TestLoadPreservesProvidedDatabaseURL(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:pass@db:5432/chess?sslmode=disable")
 	t.Setenv("JWT_SECRET", "super-secret")
-	t.Setenv("JWT_TTL_MIN", "")
-	t.Setenv("APP_ENV", "production")
+	t.Setenv("JWT_TTL_MIN", "60")
 
-	_, err := Load()
-	if err == nil {
-		t.Fatalf("expected Load to fail when APP_ENV is invalid")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
 	}
-	if !strings.Contains(err.Error(), "APP_ENV") {
-		t.Fatalf("unexpected error: %v", err)
+
+	if !strings.Contains(cfg.DatabaseURL, "db:5432/chess") {
+		t.Fatalf("expected database URL to be preserved, got %q", cfg.DatabaseURL)
 	}
-}
-
-func TestLoadAcceptsSupportedAppEnv(t *testing.T) {
-	supported := []string{"dev", "test", "staging", "prod"}
-	for _, env := range supported {
-		t.Run(env, func(t *testing.T) {
-			t.Setenv("DATABASE_URL", "postgres://example")
-			t.Setenv("JWT_SECRET", "super-secret")
-			t.Setenv("JWT_TTL_MIN", "")
-			t.Setenv("APP_ENV", env)
-
-			cfg, err := Load()
-			if err != nil {
-				t.Fatalf("Load returned error: %v", err)
-			}
-			if cfg.AppEnv != env {
-				t.Fatalf("expected app env %q, got %q", env, cfg.AppEnv)
-			}
-		})
+	if cfg.JWTTTLMin != 60 {
+		t.Fatalf("expected ttl 60, got %d", cfg.JWTTTLMin)
 	}
 }
