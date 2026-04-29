@@ -79,6 +79,13 @@ Authentication request validation:
 - Register `password`: 8-128 chars
 - Register `email`: optional but must be valid email format when present
 
+## Request Tracing
+
+All responses include `X-Request-Id`.
+
+- If client sends `X-Request-Id`, the API reuses it.
+- Otherwise, API generates one per request.
+
 ## Development Commands
 
 ```bash
