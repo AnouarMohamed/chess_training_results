@@ -40,6 +40,12 @@ jobs:
       - name: Run unit tests
         run: go test ./...
 
+      - name: Run fresh tests (no cache)
+        run: go test -count=1 ./...
+
+      - name: Run go vet
+        run: go vet ./...
+
       - name: Install sqlc
         run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
 

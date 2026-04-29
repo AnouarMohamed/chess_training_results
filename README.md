@@ -84,6 +84,9 @@ Authentication request validation:
 ```bash
 make fmt
 make test
+make test-fresh
+make vet
+make check
 make sqlc
 make build
 make print-env-template
