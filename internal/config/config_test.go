@@ -10,6 +10,7 @@ func TestLoadUsesDefaults(t *testing.T) {
 	t.Setenv("JWT_SECRET", "super-secret")
 	t.Setenv("HTTP_ADDR", "")
 	t.Setenv("JWT_TTL_MIN", "")
+	t.Setenv("APP_ENV", "")
 
 	cfg, err := Load()
 	if err != nil {
@@ -21,6 +22,9 @@ func TestLoadUsesDefaults(t *testing.T) {
 	}
 	if cfg.JWTTTLMin != 120 {
 		t.Fatalf("expected default ttl 120, got %d", cfg.JWTTTLMin)
+	}
+	if cfg.AppEnv != "dev" {
+		t.Fatalf("expected default app env dev, got %q", cfg.AppEnv)
 	}
 }
 
